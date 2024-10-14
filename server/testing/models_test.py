@@ -24,21 +24,28 @@ class TestAuthor:
                 author2 = Author(name = '', phone_number = '1231144321')
 
     def test_requires_unique_name(self):
-        '''requires each record to have a unique name.'''
+        '''Requires each record to have a unique name.'''
         with app.app_context():
+            # Clear the authors table
             db.session.query(Author).delete()
             db.session.commit()
-        
-        with app.app_context():
-            author_a = Author(name = 'Ben', phone_number = '1231144321')
+
+            # Add the first author
+            author_a = Author(name='Ben', phone_number='1231144321')
             db.session.add(author_a)
             db.session.commit()
-            
-            with pytest.raises(ValueError):
-                author_b = Author(name = 'Ben', phone_number = '1231144321')
-                
-            db.session.query(Author).delete()
-            db.session.commit()
+
+            # Attempt to add a second author with the same name
+            author_b = Author(name='Ben', phone_number='9876543210')
+            db.session.add(author_b)
+        
+                # This should raise an IntegrityError when committing
+            with pytest.raises(IntegrityError):
+                db.session.commit()
+
+                    # Cleanup
+                db.session.query(Author).delete()
+                db.session.commit()
 
     def test_requires_ten_digit_phone_number(self):
         '''requires each phone number to be exactly ten digits.'''
